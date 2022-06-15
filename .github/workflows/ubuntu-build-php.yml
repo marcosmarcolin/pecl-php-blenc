@@ -1,0 +1,24 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install php7.4-dev
+      run: sudo apt install -y php7.4-dev
+    - name: Run PHPize on source
+      run: /usr/bin/phpize7.4
+    - name: Configure source
+      run: ./configure
+    - name: Make source
+      run: make
