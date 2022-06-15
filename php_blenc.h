@@ -57,6 +57,26 @@ extern zend_module_entry blenc_module_entry;
 
 #ifdef ZTS
 #include "TSRM.h"
+#else
+// These are removed on PHP 8.x and they are not available on Ubuntu 7.4 so just behave
+// they are until PHP 7.x in wiped out of earth
+
+#ifndef TSRMLS_C
+#define TSRMLS_C
+#endif
+
+#ifndef TSRMLS_CC
+#define TSRMLS_CC
+#endif
+
+#ifndef TSRMLS_D
+#define TSRMLS_D
+#endif
+
+#ifndef TSRMLS_DC
+#define TSRMLS_DC
+#endif
+
 #endif
 
 PHP_MINIT_FUNCTION(blenc);
