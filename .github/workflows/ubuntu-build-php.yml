@@ -10,7 +10,12 @@ jobs:
   php-7_4:
 
     runs-on: ubuntu-latest
+
     container: ${{ matrix.container }}
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/GMT
 
     strategy:
       matrix:
@@ -20,7 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Apt undate ${{ matrix.container }}
+    - name: Set timezone
+      run: ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    - name: Apt update ${{ matrix.container }}
       run: apt update && apt upgrade -y
     - name: Install php${{ matrix.php-version }}-dev on ${{ matrix.container }}
       run: apt install -y php${{ matrix.php-version }}-dev
@@ -34,7 +41,12 @@ jobs:
   php-8_1:
 
     runs-on: ubuntu-latest
+
     container: ${{ matrix.container }}
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/GMT
 
     strategy:
       matrix:
@@ -44,7 +56,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Apt undate ${{ matrix.container }}
+    - name: Set timezone
+      run: ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+    - name: Apt update ${{ matrix.container }}
       run: apt update && apt upgrade -y
     - name: Install php${{ matrix.php-version }}-dev on ${{ matrix.container }}
       run: apt install -y php${{ matrix.php-version }}-dev
