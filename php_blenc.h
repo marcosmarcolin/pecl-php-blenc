@@ -98,7 +98,12 @@ ZEND_END_MODULE_GLOBALS(blenc)
 
 size_t (*old_stream_reader)(void *, char *, size_t TSRMLS_DC);
 void (*old_stream_closer)(void * TSRMLS_DC);
+#ifdef PHP_ZEND_ENGINE_7_0
 zend_op_array *(*zend_compile_file_old)(zend_file_handle *, int TSRMLS_DC);
+#endif
+#ifdef PHP_ZEND_ENGINE_8_0
+zend_op_array *(*zend_compile_file_old)(zend_file_handle *, int type);
+#endif
 zend_op_array *blenc_compile(zend_file_handle *, int TSRMLS_DC);
 
 static void php_blenc_make_md5(char *, void *, unsigned int TSRMLS_DC);
