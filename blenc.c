@@ -1,8 +1,9 @@
 /*
   +----------------------------------------------------------------------+
-  | PHP Version 5                                                        |
+  | PHP Version 7.4 - 8.1                                                |
   +----------------------------------------------------------------------+
   | Copyright (c) 1997-2013 The PHP Group                                |
+  | Copyright (c) 2022 Tuukka Pasanen                                    |
   +----------------------------------------------------------------------+
   | This source file is subject to version 3.0 of the PHP license,       |
   | that is bundled with this package in the file LICENSE, and is        |
@@ -564,7 +565,12 @@ zend_op_array *blenc_compile(zend_file_handle *file_handle, int type TSRMLS_DC)
 	/*
 	 * using php_stream instead zend internals
 	 */
+#ifdef PHP_ZEND_ENGINE_7_0
 	if( (stream = php_stream_open_wrapper(file_handle->filename, "r", REPORT_ERRORS, NULL)) == NULL) {
+#endif
+#ifdef PHP_ZEND_ENGINE_8_0
+	if( (stream = php_stream_open_wrapper(ZSTR_VAL(file_handle->filename), "r", REPORT_ERRORS, NULL)) == NULL) {
+#endif
 		zend_error(E_NOTICE, "blenc_compile: unable to open stream, compiling with default compiler.");
 		return retval = zend_compile_file_old(file_handle, type TSRMLS_CC);
 	}
@@ -648,9 +654,14 @@ zend_op_array *blenc_compile(zend_file_handle *file_handle, int type TSRMLS_DC)
 
 	if(validated && decoded != NULL)
 	{
-
 		ZVAL_STRINGL(&code, (char *)decoded, decoded_len);
+#ifdef PHP_ZEND_ENGINE_7_0
 		retval = zend_compile_string(&code, (char *)file_handle->filename TSRMLS_CC);
+#endif
+
+#ifdef PHP_ZEND_ENGINE_8_0
+		retval = zend_compile_string(Z_STR(code), (char *)file_handle->filename);
+#endif
 
 	} else
 	{
