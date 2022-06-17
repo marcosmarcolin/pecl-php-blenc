@@ -14,7 +14,7 @@
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
   | Author: John Coggeshall <john@php.net>                               |
-  |         Giuseppe Chiesa <gchiesa@php.net>			 				 |
+  |         Giuseppe Chiesa <gchiesa@php.net>                            |
   +----------------------------------------------------------------------+
 */
 
@@ -50,9 +50,9 @@ HashTable *php_bl_keys;
 
 /* {{{ argument information */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_blenc_encrypt, 0, 0, 1)
-    ZEND_ARG_TYPE_INFO(0, content, IS_STRING, 1)
-    ZEND_ARG_TYPE_INFO(0, output, IS_STRING, 1)
-    ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 1)
+	ZEND_ARG_TYPE_INFO(0, content, IS_STRING, 1)
+	ZEND_ARG_TYPE_INFO(0, output, IS_STRING, 1)
+	ZEND_ARG_TYPE_INFO(0, key, IS_STRING, 1)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -201,9 +201,12 @@ PHP_RINIT_FUNCTION(blenc)
 	if(!BL_G(keys_loaded)) {
 		if(php_blenc_load_keyhash(TSRMLS_C) == FAILURE) {
 			zend_error(E_WARNING, "BLENC: Could not load some or all of the Keys");
-			return FAILURE;
+			BL_G(keys_loaded) = FALSE;
 		}
-		BL_G(keys_loaded) = TRUE;
+                else
+                {
+			BL_G(keys_loaded) = TRUE;
+		}
 	}
 
 	return SUCCESS;
@@ -238,7 +241,6 @@ PHP_FUNCTION(blenc_encrypt)
 	char *data = NULL, *output_file = NULL;
 	int output_len = 0, key_len = 0, data_len = 0, output_file_len = 0;
 	php_stream *stream;
-	//zend_bool dup_key = FALSE;
 	char main_key[] = BLENC_PROTECT_MAIN_KEY;
 	char main_hash[33];
 	b_byte *bfdata = NULL;
@@ -260,10 +262,27 @@ PHP_FUNCTION(blenc_encrypt)
 	}
 
 	if(key == NULL) {
-		key = php_blenc_gen_key(TSRMLS_C);
-	} //else {
-	//	dup_key = TRUE;
-	//}
+		/* If key if not provided and there is key filethen assume that
+		* First key wanted to be used.  If not then generate key
+		*/
+		if(BL_G(keys_loaded)
+		&& zend_hash_num_elements(php_bl_keys) == 1)
+		{
+			key = (unsigned char *) zend_hash_index_find_ptr(php_bl_keys, 0);
+		}
+		else
+		{
+			key = php_blenc_gen_key(TSRMLS_C);
+			/* Add generated key to key chain that script that one
+			* can also decode encoded stuff in same php instance
+			*
+			* Add notice that we are using new that user understands
+			* use that one
+			*/
+			zend_hash_next_index_insert_ptr(php_bl_keys, key);
+			zend_error(E_NOTICE, "blenc_encode: generate new key encoding key.");
+	        }
+	}
 
 	if(strlen(data) > 0 && data_len == 0) {
 		data_len = strlen(data);
@@ -279,7 +298,6 @@ PHP_FUNCTION(blenc_encrypt)
 		_php_stream_write(stream, (char *)retval, output_len TSRMLS_CC);
 		php_stream_close(stream);
 
-		/* RETVAL_STRING(key, dup_key); */
 		rtnstr = strdup(ZSTR_VAL(b64data));
 		zend_string_release(b64data);
 		RETVAL_STRINGL((char *)rtnstr, ZSTR_LEN(b64data));
@@ -310,6 +328,7 @@ static char *php_blenc_file_to_mem(char *filename TSRMLS_DC)
 	zval *stringvalue = NULL;
 
 	if (!(stream = php_stream_open_wrapper(filename, "rb", REPORT_ERRORS, NULL))) {
+		zend_error(E_WARNING, "php_blenc_file_to_mem: Can't find or open file: '%s'.", filename);
 		return NULL;
 	}
 
@@ -345,6 +364,11 @@ static int php_blenc_load_keyhash(TSRMLS_D)
 
 	keys = php_blenc_file_to_mem(BL_G(key_file) TSRMLS_CC);
 
+	if(!keys)
+	{
+		return FAILURE;
+	}
+
 	memset(main_hash, '\0', sizeof(main_hash));
 	php_blenc_make_md5((char *)main_hash, main_key, strlen(main_key) TSRMLS_CC);
 
@@ -369,6 +393,7 @@ static int php_blenc_load_keyhash(TSRMLS_D)
 			temp = pestrdup((char *)buff, TRUE);
 			efree(bfdata);
 			bfdata = NULL;
+
 			rtncode = zend_hash_next_index_insert_ptr(php_bl_keys, temp);
 
 			if(Z_TYPE_P(rtncode) == IS_FALSE) {
@@ -469,7 +494,7 @@ b_byte *php_blenc_decode(void *input, unsigned char *key, int in_len, int *out_l
 
 	if(in_len % 8) {
 
-		zend_error(E_WARNING, "Attempted to decode non-blenc encrytped file.");
+		zend_error(E_WARNING, "Attempted to decode non-blenc encrypted file.");
 		return (b_byte *)estrdup("");
 
 	} else {
@@ -649,7 +674,7 @@ zend_op_array *blenc_compile(zend_file_handle *file_handle, int type TSRMLS_DC)
 
 		ZEND_HASH_FOREACH_END();
 
-        if(!validated) {
+	        if(!validated) {
 
 			zend_error(E_ERROR, "blenc_compile: Validation of script '%s' failed, cannot execute.", file_name);
 			return NULL;
