@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        container: ["debian:bullseye", "ubuntu:focal"]
+        container: ["ubuntu:focal"]
         php-version: [7.4]
 
     steps:
@@ -37,6 +37,8 @@ jobs:
       run: ./configure
     - name: Make source on ${{ matrix.container }}
       run: make
+    - name: Run testcases ${{ matrix.php-version }}
+      run: make NO_INTERACTION=1 PHP_TEST_SHARED_EXTENSIONS="-c tests/blenc.ini" test
 
   php-8_1:
 
@@ -50,7 +52,7 @@ jobs:
 
     strategy:
       matrix:
-        container: ["debian:sid", "ubuntu:22.04"]
+        container: ["ubuntu:22.04"]
         php-version: [8.1]
 
     steps:
@@ -68,3 +70,5 @@ jobs:
       run: ./configure
     - name: Make source on ${{ matrix.container }}
       run: make
+    - name: Run testcases ${{ matrix.php-version }}
+      run: make NO_INTERACTION=1 PHP_TEST_SHARED_EXTENSIONS="-c tests/blenc.ini" test
