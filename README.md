@@ -8,7 +8,7 @@ It is not designed for complete security (it is still possible to disassemble th
 into op codes using a package such as XDebug), however it does keep people out of your code
 and make reverse engineering difficult.
 
-Extension have been tested with PHP versions 5.6 - 7.2.
+Extension have been tested with PHP versions 7.4 - 8.1.
 
 ## Please notice
 As [upstream project](htps://pecl.php.net/package/BLENC) seems to be stalled this should
