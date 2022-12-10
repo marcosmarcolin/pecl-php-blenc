@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         container: ["ubuntu:focal"]
-        php-version: ["7.4"]
+        php-version: [7.4]
 
     steps:
       - uses: actions/checkout@v3
@@ -41,7 +41,7 @@ jobs:
       - name: Run testcases ${{ matrix.php-version }}
         run: make NO_INTERACTION=1 PHP_TEST_SHARED_EXTENSIONS="-c tests/blenc.ini" test
 
-  php-7_4_8_0_8_1_and_8_2:
+  php-8_0_8_1_and_8_2:
 
     runs-on: ubuntu-latest
 
@@ -54,7 +54,7 @@ jobs:
     strategy:
       matrix:
         container: ["ubuntu:22.04"]
-        php-version: ["7.4","8.0","8.1","8.2"]
+        php-version: [0,1,2]
 
     steps:
       - uses: actions/checkout@v3
@@ -67,7 +67,7 @@ jobs:
         run: apt install -y software-properties-common
       - name: Add ppa:ondrej/php on ${{ matrix.container }}
         run: LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php && apt update
-      - name: Install php${{ matrix.php-version }}-dev
+      - name: Install php8.${{ matrix.php-version }}-dev
         run: apt install -y php${{ matrix.php-versio n }}-dev
       - name: Run PHPize on source on ${{ matrix.container }}
         run: /usr/bin/phpize${{ matrix.php-version }}
