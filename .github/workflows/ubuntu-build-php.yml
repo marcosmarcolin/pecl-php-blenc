@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         container: ["ubuntu:focal"]
-        php-version: [7.4]
+        php-version: ["7.4"]
 
     steps:
     - uses: actions/checkout@v3
@@ -53,7 +53,7 @@ jobs:
     strategy:
       matrix:
         container: ["ubuntu:22.04"]
-        php-version: [7.4, 8.0, 8.1, 8.2]
+        php-version: ["7.4", "8.0", "8.1", "8.2"]
 
     steps:
     - uses: actions/checkout@v3
@@ -65,9 +65,9 @@ jobs:
     - name: Add package software-properties-common for easier repo adding
       run: apt install -y software-properties-common
     - name: Add ppa:ondrej/php on ${{ matrix.container }}
-      run: LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
+      run: LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php && apt update
     - name: Install php${{ matrix.php-version }}-dev on ${{ matrix.container }}
-      run: apt install -y php${{ matrix.php-version }}-dev
+      run: apt install -y php${{ matrix.php-versio n }}-dev
     - name: Run PHPize on source on ${{ matrix.container }}
       run: /usr/bin/phpize${{ matrix.php-version }}
     - name: Configure source on ${{ matrix.container }}
