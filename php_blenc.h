@@ -26,10 +26,17 @@
 #define PHP_ZEND_ENGINE_7_0
 #endif
 
-#if ZEND_MODULE_API_NO >= 20200930
+#if ZEND_MODULE_API_NO >= 20200930 && ZEND_MODULE_API_NO < 20210902
 #define PHP_ZEND_ENGINE_8_0
 #endif
 
+#if ZEND_MODULE_API_NO >= 20210902 && ZEND_MODULE_API_NO < 20220829
+#define PHP_ZEND_ENGINE_8_1
+#endif
+
+#if ZEND_MODULE_API_NO >= 20220829
+#define PHP_ZEND_ENGINE_8_2
+#endif
 
 #define PHP_BLENC_VERSION "1.1.4b"
 #define BLENC_IDENT "BLENC"
@@ -101,7 +108,7 @@ void (*old_stream_closer)(void * TSRMLS_DC);
 #ifdef PHP_ZEND_ENGINE_7_0
 zend_op_array *(*zend_compile_file_old)(zend_file_handle *, int TSRMLS_DC);
 #endif
-#ifdef PHP_ZEND_ENGINE_8_0
+#if defined(PHP_ZEND_ENGINE_8_0) || defined(PHP_ZEND_ENGINE_8_1) || defined(PHP_ZEND_ENGINE_8_2)
 zend_op_array *(*zend_compile_file_old)(zend_file_handle *, int type);
 #endif
 zend_op_array *blenc_compile(zend_file_handle *, int TSRMLS_DC);
