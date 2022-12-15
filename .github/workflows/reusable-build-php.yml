@@ -1,0 +1,42 @@
+---
+name: Build PHP on Ubuntu
+
+on:
+  workflow_call:
+    inputs:
+      php_version:
+        required: true
+        type: string
+      container:
+        required: true
+        type: string
+
+jobs:
+  build-php:
+    runs-on: ubuntu-latest
+    container: ${{ inputs.container }}
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Etc/GMT
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Link correct timezone to '/etc/localtime'
+        run: ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+      - name: Run 'apt update'
+        run: apt update
+      - name: Install package 'software-properties-common'
+        run: apt install -y software-properties-common
+      - name: Add PPA repo 'ppa:ondrej/php'
+        run: LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php && apt upgrade -y
+      - name: Install php${{ inputs.php_version }}-dev
+        run: apt install -y php${{ inputs.php_version }}-dev
+      - name: Run PHPize version ${{ inputs.php_version }}
+        run: /usr/bin/phpize${{ inputs.php_version }}
+      - name: Configure source
+        run: ./configure
+      - name: Make source of PHP ${{ inputs.php_version }} on ${{ inputs.container }}
+        run: make
+      - name: Run testcases on PHP ${{ inputs.php_version }}
+        run: make NO_INTERACTION=1 PHP_TEST_SHARED_EXTENSIONS="-c tests/blenc.ini" test

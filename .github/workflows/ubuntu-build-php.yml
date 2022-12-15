@@ -1,83 +1,35 @@
 ---
-name: Debian / Ubuntu latest 7.4 build
+name: Ubuntu PHP 7.4-8.2
 
 on:
   push:
-    branches: ["master"]
+    branches:
+      - master
   pull_request:
-    branches: ["master"]
+    branches:
+      - master
 
 jobs:
-  php-7_4_and_8_0:
+  php-7_4:
+    uses: ./.github/workflows/reusable-build-php.yml
+    with:
+      php_version: "7.4"
+      container: "ubuntu:focal"
 
-    runs-on: ubuntu-latest
+  php-8_0:
+    uses: ./.github/workflows/reusable-build-php.yml
+    with:
+      php_version: "8.0"
+      container: "ubuntu:focal"
 
-    container: ${{ matrix.container }}
+  php-8_1:
+    uses: ./.github/workflows/reusable-build-php.yml
+    with:
+      php_version: "8.1"
+      container: "ubuntu:22.04"
 
-    env:
-      DEBIAN_FRONTEND: noninteractive
-      TZ: Etc/GMT
-
-    strategy:
-      matrix:
-        container: ["ubuntu:focal"]
-        php-version: ["7.4", "8.0"]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set timezone
-        run: ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-      - name: Apt update ${{ matrix.container }}
-        run: apt update && apt upgrade -y
-      - name: Add package software-properties-common for easier repo adding
-        run: apt install -y software-properties-common
-      - name: Add ppa:ondrej/php on ${{ matrix.container }}
-        run: LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php && apt update
-      - name: Install php${{ matrix.php-version }}-dev
-        run: apt install -y php${{ matrix.php-version }}-dev
-      - name: Run PHPize on source on ${{ matrix.container }}
-        run: /usr/bin/phpize${{ matrix.php-version }}
-      - name: Configure source on ${{ matrix.container }}
-        run: ./configure
-      - name: Make source on ${{ matrix.container }}
-        run: make
-      - name: Run testcases ${{ matrix.php-version }}
-        run: make NO_INTERACTION=1 PHP_TEST_SHARED_EXTENSIONS="-c tests/blenc.ini" test
-
-  php-8_1_and_8_2:
-
-    runs-on: ubuntu-latest
-
-    container: ${{ matrix.container }}
-
-    env:
-      DEBIAN_FRONTEND: noninteractive
-      TZ: Etc/GMT
-
-    strategy:
-      matrix:
-        container: ["ubuntu:22.04"]
-        php-version: ["8.1","8.2"]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set timezone
-        run: ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-      - name: Apt update with PHP ${{ matrix.php-version }}
-        run: apt update && apt upgrade -y
-      - name: Add package software-properties-common for easier repo adding
-        run: apt install -y software-properties-common
-      - name: Add ppa:ondrej/php on ${{ matrix.container }}
-        run: LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php && apt update
-      - name: Install php${{ matrix.php-version }}-dev
-        run: apt install -y php${{ matrix.php-version }}-dev
-      - name: Run PHPize on source on ${{ matrix.container }}
-        run: /usr/bin/phpize${{ matrix.php-version }}
-      - name: Configure source on ${{ matrix.container }}
-        run: ./configure
-      - name: Make source on ${{ matrix.container }}
-        run: make
-      - name: Run testcases ${{ matrix.php-version }}
-        run: make NO_INTERACTION=1 PHP_TEST_SHARED_EXTENSIONS="-c tests/blenc.ini" test
+  php-8_2:
+    uses: ./.github/workflows/reusable-build-php.yml
+    with:
+      php_version: "8.2"
+      container: "ubuntu:22.04"
